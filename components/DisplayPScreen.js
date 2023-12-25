@@ -7,7 +7,7 @@
  * foreground location tracking.
  */
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect } from 'react';
 import { TextInput, Button, Text, View, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from 'expo-location';
@@ -16,8 +16,29 @@ import * as PathStore from '../PathStore.js';
 let subscription = null; // location tracking service
 
 export default function ({ selectedPath, changePscreen, allPaths, setAllPaths }){
-  
+
+// for delete confirmaiton
 const [confirmation, setConfirmation] = useState(false);
+const [duration, setDuration] = useState('');
+
+
+
+const formatDuration = (startTime, stopTime) => {
+  const start = new Date(startTime);
+  const stop = new Date(stopTime);
+  const duration = new Date(stop - start);
+  const hours = duration.getUTCHours();
+  const minutes = duration.getUTCMinutes();
+  const seconds = duration.getUTCSeconds();
+  return `${hours}h ${minutes}m ${seconds}s`;
+};
+
+
+
+useEffect(() => {
+  setDuration(formatDuration(selectedPath.startTime, selectedPath.stopTime));
+}, [selectedPath]);
+
 
 function toggleConfirmation(){
   setConfirmation(!confirmation);
@@ -26,7 +47,7 @@ function toggleConfirmation(){
 async function deletePath(){
 
   await PathStore.deletePath(selectedPath)
-  //PathStore.deleteAllPaths();
+  //resets summary
   setAllPaths(allPaths.filter(path => path !== selectedPath));
 
   changePscreen('summary');
@@ -36,8 +57,8 @@ return (
   <SafeAreaView style={styles.container}>
     {allPaths.length > 0 && (
       <>
-        <View style={styles.container}>  
-            <Text>{`Path Name: ${selectedPath.name}`}</Text>
+        <View style={styles.title}>  
+            <Text style={styles.title}> {`Name: ${selectedPath.name}`} </Text>
         </View>
         <MapView style={styles.map}
         initialRegion={{
@@ -77,8 +98,21 @@ return (
           />
         )}
         </MapView>  
+
+        <View style={styles.container}> 
+            <Text>{`Date: ${selectedPath.dateFormatted}`}</Text>
+            <Text>{`Start Time: ${selectedPath.timeFormatted}`}</Text>
+            <Text>{`Duration: ${duration}`}</Text>
+            <Text>{`Distance: ${selectedPath.pathDistance} km`}</Text>
+        </View>
+    
         <ScrollView style={styles.data}>
-            <Text>Spots: {JSON.stringify(selectedPath.spots)}</Text>      
+            <Text>Spots: </Text>  
+            {selectedPath.spots.map((spot, index) => (
+            <View key={index} style={styles.spotContainer}>
+              <Text style={styles.spotTitle}>{spot.title}</Text>
+            </View>
+          ))}    
         </ScrollView>
         <View style={confirmation ? styles.hidden : styles.inputGroup}>
           <Button title="Delete Path" onPress={toggleConfirmation} color='red' style={styles.inputGroup}>
@@ -96,7 +130,13 @@ return (
 );
 };
 
+
+
 const styles = StyleSheet.create({
+  title: {
+    fontSize: 25,
+    marginBottom: 16,
+  },
   container: {
     flex: 1,
     alignItems: 'center',

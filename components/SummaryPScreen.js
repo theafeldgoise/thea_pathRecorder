@@ -1,17 +1,7 @@
 //import { useState, useEffect } from "react";
 
-import { StatusBar } from 'expo-status-bar';
-import  {FlatList, SafeAreaView, StyleSheet, Text, View,  TouchableOpacity, Alert, ImageBackground, Image} from 'react-native';
-
-import React, { useState, useEffect } from "react";
-import * as PathStore from '../PathStore.js';
-
-import { SegmentedButtons } from 'react-native-paper';
-
-
-
+import  {FlatList, StyleSheet, Text, View,  TouchableOpacity, } from 'react-native';
 const SummaryPScreen = ({changePscreen, allPaths, setSelectedPath}) => {
-
 
   const handlePathSelect = (path) => {
     setSelectedPath(path);
@@ -24,17 +14,17 @@ const SummaryPScreen = ({changePscreen, allPaths, setSelectedPath}) => {
         <>
          <Text style={styles.title}>Paths</Text>
           <FlatList
-            style={styles.searchResults}
+            style={styles.results}
             data={allPaths}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.resultItem}
+                style={styles.box}
                 onPress={() => handlePathSelect(item)}
               >
                 <Text>{`Path Name: ${item.name}`}</Text>
-                <Text>{`Date: ${item.startTime}`}</Text>
-                <Text>{`Time: ${item.stopTime}`}</Text>
-                <Text>{`Length: ${item.pathDistance} km`}</Text>
+                <Text>{`Date: ${item.dateFormatted}`}</Text>
+                <Text>{`Start Time: ${item.timeFormatted}`}</Text>
+                <Text>{`Distance: ${item.pathDistance} km`}</Text>
               </TouchableOpacity>
             )}
           />
@@ -63,13 +53,13 @@ const styles = StyleSheet.create({
       paddingHorizontal: 8,
       width: '100%',
     },
-    resultItem: {
+    box: {
       marginBottom: 16,
       borderColor: 'gray',
       borderWidth: 1,
       padding: 8,
     },
-    searchResults:{
+    results:{
       flexDirection: 'column',
       padding: 10,
       marginVertical: 8,

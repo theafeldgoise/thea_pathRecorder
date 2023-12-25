@@ -38,6 +38,9 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
   const [startLocation, setStartLocation] = useState(null);
   const [stopLocation, setStopLocation] = useState(null);
   const [startInstance, setStartInstance] = useState(false);
+  const [dateFormatted, setDateFormatted] = useState('');
+  const [timeFormatted, setTimeFormatted] = useState('');
+  
 
   const pathData = {
     name,
@@ -45,7 +48,10 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
     stopTime,
     pathDistance,
     spots,
-    coords, 
+    coords,
+    dateFormatted,
+    timeFormatted,
+
   };
 
 
@@ -62,6 +68,24 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
     coord, 
   };
 
+  const formatDate = (isoString) => {
+    const myDate = new Date(isoString);
+    return `${myDate.getMonth() + 1}/${myDate.getDate()}/${myDate.getFullYear()}`;
+  };
+  
+  //asked brother for help with this
+  const formatStart = (startTime) => {
+  const start = new Date(startTime);
+  let hours = start.getHours();
+  const minutes = start.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // displays hour '0' as '12'
+  const minutesFormatted = minutes < 10 ? '0' + minutes : minutes;
+  return( `${hours}:${minutesFormatted} ${ampm}`);
+  };
+  
+//from snack in class
   function haversineDistance(coords1, coords2) {
     const R = 6371; // Radius of the Earth in kilometers
     const lat1 = coords1.latitude * Math.PI / 180; // Convert degrees to radians
@@ -91,6 +115,8 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
     
 }
 
+
+
     // Start foreground location tracking
   async function startTracking() {
     if (tracking ===true){
@@ -98,19 +124,7 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
     }
     let perm = await Location.requestForegroundPermissionsAsync();
     setPermissionText(perm);
-    /*if (perm.status !== 'granted') {
-      console.log('Permission to access location was denied');
-      return;
-    }
-
-    // Shut down a foreground service subscription that's already running
-    if (subscription !== null) {
-      console.log('Stopping active location subscription service.')
-      subscription.remove();
-    }
-    */
-
-   
+    
     // Reset myCoord and coords state variables for new tracking session
     setStartInstance(true);
     setTracking(true);
@@ -144,7 +158,7 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
           latitude: newLocation.coords.latitude, 
           longitude: newLocation.coords.longitude
         }
-        console.log('Moved to new coord.', newCoord);
+        //console.log('Moved to new coord.', newCoord);
        
         setMyCoord(prevMyCoord => {
           console.log('prevMyCoord =', prevMyCoord); 
@@ -170,17 +184,16 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
       setTracking(false);
       setStopLocation(myCoord)
       setMyCoord(null);
-      //setPathDistance(0.0456);
-      //console.log("distance:", calculateDistance(coords));
-      setPathDistance(calculateDistance(coords));
      
-      
-
-      //setAllPaths(previousPaths => [...previousPaths, pathData]);
+      setDateFormatted(formatDate(startTime));
+      console.log(dateFormatted);
+      setPathDistance(calculateDistance(coords));
+      setTimeFormatted(formatStart(startTime));
       let currentDate = new Date();
       let isoDateTime = currentDate.toISOString();
       setStopTime(isoDateTime);
       setSavingPath(true);
+  
 
       
     }
@@ -270,31 +283,28 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
         <Button title="Start Tracking" onPress={startTracking} color='violet' disabled={tracking || (!tracking && savingPath )}/>
         <Button title="Stop Tracking" onPress={stopTracking} color='purple' disabled={!tracking || addingSpot}/>
     </View>
-    <View style={myCoord === null ? styles.hidden : styles.creatingSpot}>
-    <Button title="Add Spot" onPress={addSpot} color='navy' style={myCoord === null ? styles.hidden : styles.controls} disabled={addingSpot}>
+    <View style={ tracking ? styles.controls : styles.hidden}>
+    <Button title="Add Spot" onPress={addSpot} color='navy'  disabled={addingSpot}>
     Add Spot
     </Button>
-      <View style={addingSpot === true? styles.inputGroup: styles.hidden}>
+    </View>
+    <ScrollView style={addingSpot === true? styles.creatingSpot: styles.hidden}>
         <Text style={styles.label}>Title</Text>
         <TextInput
           onChangeText={(text) => setTitle(text)}
           style={styles.input}
         />
-      </View>
-
       <View style={addingSpot === true? styles.inputGroup: styles.hidden}>
       <Text style={styles.label}>More Info</Text>
         <TextInput
           onChangeText={(text) => setMoreInfo(text)}
           style={styles.input}
         />
-      </View>
-      <View style={addingSpot === true? styles.inputGroup: styles.hidden} >
-      <Button title="Save Spot" onPress={saveSpot} color='navy' style={styles.controls} >
+      <Button title="Save Spot" onPress={saveSpot} color='navy' >
     Save Spot
     </Button>
-     </View>
-     </View>
+      </View>
+     </ScrollView>
       <View style={(tracking === false && startTime !== '')? styles.inputGroup: styles.hidden}>
      <View style={ styles.inputGroup}>
       <Text style={styles.label}>Path Name</Text>
