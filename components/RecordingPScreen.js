@@ -6,15 +6,15 @@
  * Updated 2023/11/02 to remove TaskManager, which is *not* needed for 
  * foreground location tracking.
  */
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { useState, useSyncExternalStore } from 'react';
+
+import { useState} from 'react';
 import { TextInput, Button, Text, View, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from 'expo-location';
-import samplePaths from '../samplePaths.js';
 import * as PathStore from '../PathStore.js';
 let subscription = null; // location tracking service
 
+//import PathView from PathView.js
 
 export default function RecordingPScreen({ changePscreen, setAllPaths, setSelectedPath, selectedPath }) {
 
@@ -80,7 +80,7 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
   const minutes = start.getMinutes();
   const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12;
-  hours = hours ? hours : 12; // displays hour '0' as '12'
+  hours = hours ? hours : 12; // for displaying hour '0' as '12'
   const minutesFormatted = minutes < 10 ? '0' + minutes : minutes;
   return( `${hours}:${minutesFormatted} ${ampm}`);
   };
@@ -158,7 +158,7 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
           latitude: newLocation.coords.latitude, 
           longitude: newLocation.coords.longitude
         }
-        //console.log('Moved to new coord.', newCoord);
+        console.log('Moved to new coord.', newCoord);
        
         setMyCoord(prevMyCoord => {
           console.log('prevMyCoord =', prevMyCoord); 
@@ -234,13 +234,19 @@ export default function RecordingPScreen({ changePscreen, setAllPaths, setSelect
    setTime('');
   };
 
-
-
+  /* 
+    Could not get PathView working for RecordingPScreen. This would be to pass into PathView.
+    const currentData = {
+    coords: coords, 
+    spots: spots,
+    myCoord: myCoord  
+};*/
 
   return (
     <SafeAreaView style={styles.container}>
      { (myCoord === null) ?
         <Text>Map Only Viewable When Tracking a Path</Text> :
+        /*<PathView pathData={currentData} /> could not get PathView working for the recording screen...*/
         <MapView style={!startInstance ? styles.hidden : styles.map} 
         initialRegion={{
         latitude: myCoord.latitude,

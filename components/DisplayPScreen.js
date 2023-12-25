@@ -6,14 +6,14 @@
  * Updated 2023/11/02 to remove TaskManager, which is *not* needed for 
  * foreground location tracking.
  */
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+
 import { useState, useEffect } from 'react';
 import { TextInput, Button, Text, View, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from 'expo-location';
-import samplePaths from '../samplePaths.js';
 import * as PathStore from '../PathStore.js';
-let subscription = null; // location tracking service
+
+
 
 export default function ({ selectedPath, changePscreen, allPaths, setAllPaths }){
 
